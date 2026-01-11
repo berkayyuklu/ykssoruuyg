@@ -541,119 +541,19 @@
             setTimeout(setupDropZone, 100);
         }
 
-        function render() {
-            const current = getCurrentFolder();
-            const isLeaf = !current || !Object.keys(current).some(k => current[k]?.children);
-            const questionList = state.questions[getPath()] || [];
+       function render() {
+    const current = getCurrentFolder();
+    
+    // BURASI DEĞİŞTİ ↓
+    const hasChildren = current && typeof current === 'object' && 
+                       Object.values(current).some(item => item && item.children);
+    const isLeaf = !hasChildren;
+    // BURASI DEĞİŞTİ ↑
+    
+    const questionList = state.questions[getPath()] || [];
 
-            let html = `
-                <div class="header">
-                    <h1>✨ YKS Soru Bankası PRO</h1>
-                    <p style="color: #718096;">Sorularını organize et! 🎯</p>
-                    <div class="sync-area">
-                        <button class="btn btn-success" onclick="downloadBackup()">📥 Yedek İndir</button>
-                        <button class="btn btn-primary" onclick="showSync()">📤 Yedek Yükle</button>
-                    </div>
-                </div>
-
-                <div class="content">
-                    <div class="nav">
-                        ${state.currentPath.length > 0 ? 
-                            '<button class="back-btn" onclick="goBack()">◀️</button>' : 
-                            '<div style="width: 40px;"></div>'
-                        }
-                        <div class="path">📂 ${getPath()}</div>
-                        ${isLeaf ? `
-                            <div class="add-btns">
-                                <label class="add-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);" title="Kamera">
-                                    <input type="file" accept="image/*" capture="environment" onchange="addQuestion(event)" class="hidden">
-                                    📸
-                                </label>
-                                <label class="add-btn" style="background: linear-gradient(135deg, #f093fb, #f5576c);" title="Galeri">
-                                    <input type="file" accept="image/*" onchange="addQuestion(event)" class="hidden">
-                                    🖼️
-                                </label>
-                            </div>
-                        ` : '<div style="width: 110px;"></div>'}
-                    </div>
-
-                    <div class="grid">
-            `;
-
-            if (!isLeaf) {
-                for (let name in current) {
-                    const folder = current[name];
-                    const colors = folder.color || ['#a0aec0', '#718096'];
-                    html += `
-                        <div class="folder-card" 
-                             style="--from: ${colors[0]}; --to: ${colors[1]}" 
-                             onclick="openFolder('${name}')">
-                            <div class="folder-icon">${folder.icon}</div>
-                            <div class="folder-name">${name}</div>
-                        </div>
-                    `;
-                }
-            } else if (questionList.length === 0) {
-                html += `
-                    <div class="empty">
-                        <div class="empty-icon">📸</div>
-                        <h3>Henüz soru yok</h3>
-                        <p>Kamerayı veya galeriyi aç ve soru ekle!</p>
-                    </div>
-                `;
-            } else {
-                questionList.forEach((q, i) => {
-                    html += `
-                        <div class="question-card" onclick="openQuestion(${q.id})">
-                            ${q.solution || q.note ? `
-                                <div class="badges">
-                                    ${q.solution ? '✅' : ''}
-                                    ${q.note ? '📝' : ''}
-                                </div>
-                            ` : ''}
-                            <img src="${q.image}" class="question-img" alt="Soru ${i + 1}">
-                            <div style="font-weight: 700; color: #2d3748;">Soru ${i + 1}</div>
-                            <div style="color: #a0aec0; font-size: 0.9rem; margin-top: 0.5rem;">${q.date}</div>
-                        </div>
-                    `;
-                });
-            }
-
-            html += '</div></div>';
-
-            // Sync Modal
-            if (state.showSyncModal) {
-                html += `
-                    <div class="modal" onclick="if(event.target===this){state.showSyncModal=false;render();}">
-                        <div class="modal-content" onclick="event.stopPropagation()">
-                            <div class="modal-header">
-                                <h2>📤 Yedek Yükle</h2>
-                                <button class="close-btn" onclick="state.showSyncModal=false;render();">✖</button>
-                            </div>
-                            <div class="modal-body">
-                                <h3>📁 Dosya Seç:</h3>
-                                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                                    <div style="font-size: 4rem; margin-bottom: 1rem;">📁</div>
-                                    <p style="font-weight: 600; color: #2d3748; margin-bottom: 0.5rem;">
-                                        Dosyayı buraya sürükle
-                                    </p>
-                                    <p style="color: #718096;">veya tıklayıp seç</p>
-                                </div>
-                                <input type="file" id="fileInput" accept=".json" onchange="uploadBackup(event)" class="hidden">
-                                
-                                <div class="divider"></div>
-                                
-                                <h3>💡 Nasıl Kullanılır:</h3>
-                                <ol style="color: #718096; line-height: 2;">
-                                    <li><strong>Cihaz 1:</strong> "Yedek İndir" butonuna bas</li>
-                                    <li>Dosyayı WhatsApp/Telegram ile <strong>Cihaz 2'ye</strong> gönder</li>
-                                    <li><strong>Cihaz 2:</strong> Bu ekranda dosyayı yükle</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+    let html = `
+        <div class="header">
 
             // Question Modal
             if (state.showQuestionModal && state.selectedQuestion) {
