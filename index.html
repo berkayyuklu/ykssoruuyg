@@ -359,13 +359,17 @@
             return state.currentPath.join('/') || 'Ana Sayfa';
         }
 
-        function getCurrentFolder() {
-            let current = folders;
-            for (let name of state.currentPath) {
-                current = current[name]?.children || current[name];
-            }
-            return current;
+       function getCurrentFolder() {
+    let current = folders;
+    for (let name of state.currentPath) {
+        if (current[name] && current[name].children) {
+            current = current[name].children;
+        } else {
+            current = current[name];
         }
+    }
+    return current;
+}
 
         function goBack() {
             state.currentPath.pop();
