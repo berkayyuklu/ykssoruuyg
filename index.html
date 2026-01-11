@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKS Soru Bankası PRO</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .sync-area {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+        .code-display {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.3rem;
+            color: #667eea;
+            flex: 1;
+            min-width: 150px;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { background: #f7fafc; }
+        .path { 
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem 1rem;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .add-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .add-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        .add-btn:hover { transform: scale(1.1); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .folder-card, .question-card {
+            padding: 2rem;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+        }
+        .folder-card {
+            background: linear-gradient(135deg, var(--from), var(--to));
+            color: white;
+        }
+        .folder-card:hover, .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .folder-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .folder-name { font-size: 1.2rem; font-weight: 700; }
+        .question-card {
+            background: white;
+            border: 3px solid #e2e8f0;
+        }
+        .question-card:hover { border-color: #667eea; }
+        .question-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        .badges {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+        }
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem;
+            border-radius: 20px 20px 0 0;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body { padding: 2rem; }
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+        .input-code {
+            width: 100%;
+            padding: 1rem;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            margin: 1rem 0;
+            text-transform: uppercase;
+        }
+        .input-code:focus { outline: none; border-color: #667eea; }
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+        textarea:focus { outline: none; border-color: #667eea; }
+        .hidden { display: none; }
+        .empty {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 4rem;
+            color: #a0aec0;
+        }
+        .empty-icon { font-size: 5rem; margin-bottom: 1rem; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .note-box {
+            background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            min-height: 100px;
+            border: 2px solid #f1c40f;
+        }
+        .divider {
+            margin: 2rem 0;
+            border: none;
+            border-top: 2px solid #e2e8f0;
+        }
+        h3 { margin-bottom: 1rem; color: #2d3748; }
+    </style>
+</head>
+<body>
+    <div class="container" id="app"></div>
+    
+    <script>
+        const DB_NAME = 'YKSQuestionsPro';
+        const DB_VERSION = 3;
+        
+        const folders = {
+            TYT: {
+                icon: '📘',
+                color: ['#4299e1', '#3182ce'],
+                children: {
+                    'Türkçe': {
+                        icon: '📖',
+                        color: ['#f56565', '#e53e3e'],
+                        children: {
+                            'Dil Bilgisi': { icon: '📝', color: ['#fc8181', '#f56565'] },
+                            'Paragraf': { icon: '📄', color: ['#feb2b2', '#fc8181'] }
+                        }
+                    },
+                    'Sosyal': {
+                        icon: '🌍',
+                        color: ['#48bb78', '#38a169'],
+                        children: {
+                            'Tarih': { icon: '🏛️', color: ['#ecc94b', '#d69e2e'] },
+                            'Coğrafya': { icon: '🗺️', color: ['#68d391', '#48bb78'] },
+                            'Felsefe': { icon: '🤔', color: ['#9f7aea', '#805ad5'] },
+                            'Din': { icon: '☪️', color: ['#4fd1c5', '#38b2ac'] }
+                        }
+                    },
+                    'Matematik': {
+                        icon: '🔢',
+                        color: ['#4299e1', '#3182ce'],
+                        children: {
+                            'İlk 10 Konu': { icon: '1️⃣', color: ['#63b3ed', '#4299e1'] },
+                            'Problem': { icon: '🧮', color: ['#4299e1', '#3182ce'] },
+                            'Geometri': { icon: '📐', color: ['#4fd1c5', '#38b2ac'] }
+                        }
+                    },
+                    'Fen': {
+                        icon: '🧪',
+                        color: ['#9f7aea', '#805ad5'],
+                        children: {
+                            'Fizik': { icon: '⚡', color: ['#f6ad55', '#ed8936'] },
+                            'Kimya': { icon: '⚗️', color: ['#b794f4', '#9f7aea'] },
+                            'Biyoloji': { icon: '🧬', color: ['#68d391', '#48bb78'] }
+                        }
+                    }
+                }
+            },
+            AYT: {
+                icon: '⭐',
+                color: ['#b794f4', '#9f7aea'],
+                children: {
+                    'Edebiyat': { icon: '✍️', color: ['#fc8181', '#f56565'] },
+                    'Sosyal-1': { icon: '🗺️', color: ['#4fd1c5', '#38b2ac'] },
+                    'Matematik': { icon: '🔢', color: ['#4299e1', '#3182ce'] }
+                }
+            }
+        };
+
+        let state = {
+            currentPath: [],
+            questions: {},
+            syncCode: '',
+            showSyncModal: false,
+            showQuestionModal: false,
+            selectedQuestion: null,
+            editingNote: false,
+            db: null
+        };
+
+        function generateCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                
+                request.onsuccess = () => {
+                    state.db = request.result;
+                    resolve();
+                };
+                
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    
+                    if (!db.objectStoreNames.contains('questions')) {
+                        db.createObjectStore('questions');
+                    }
+                };
+            });
+        }
+
+        async function saveData() {
+            if (!state.db) return;
+            
+            const tx = state.db.transaction(['questions'], 'readwrite');
+            const store = tx.objectStore('questions');
+            store.put(state.questions, 'allData');
+            
+            // localStorage yedek
+            try {
+                localStorage.setItem(DB_NAME, JSON.stringify(state.questions));
+            } catch(e) {
+                console.log('localStorage full:', e);
+            }
+        }
+
+        async function loadData() {
+            if (!state.db) return;
+            
+            return new Promise((resolve) => {
+                const tx = state.db.transaction(['questions'], 'readonly');
+                const store = tx.objectStore('questions');
+                const request = store.get('allData');
+                
+                request.onsuccess = () => {
+                    if (request.result) {
+                        state.questions = request.result;
+                    } else {
+                        const backup = localStorage.getItem(DB_NAME);
+                        if (backup) {
+                            try {
+                                state.questions = JSON.parse(backup);
+                                saveData();
+                            } catch(e) {}
+                        }
+                    }
+                    resolve();
+                };
+                
+                request.onerror = () => resolve();
+            });
+        }
+
+        function getPath() {
+            return state.currentPath.join('/') || 'Ana Sayfa';
+        }
+
+        function getCurrentFolder() {
+            let current = folders;
+            for (let name of state.currentPath) {
+                current = current[name]?.children || current[name];
+            }
+            return current;
+        }
+
+        function goBack() {
+            state.currentPath.pop();
+            render();
+        }
+
+        function openFolder(name) {
+            state.currentPath.push(name);
+            render();
+        }
+
+        async function addQuestion(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const path = getPath();
+                if (!state.questions[path]) {
+                    state.questions[path] = [];
+                }
+                
+                state.questions[path].push({
+                    id: Date.now(),
+                    image: event.target.result,
+                    note: '',
+                    solution: null,
+                    date: new Date().toLocaleDateString('tr-TR')
+                });
+
+                await saveData();
+                render();
+            };
+            
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        function openQuestion(id) {
+            const path = getPath();
+            const question = state.questions[path]?.find(q => q.id === id);
+            
+            if (question) {
+                state.selectedQuestion = question;
+                state.showQuestionModal = true;
+                state.editingNote = false;
+                render();
+            }
+        }
+
+        async function saveNote() {
+            const textarea = document.getElementById('noteArea');
+            if (!textarea || !state.selectedQuestion) return;
+
+            state.selectedQuestion.note = textarea.value;
+            const path = getPath();
+            
+            state.questions[path] = state.questions[path].map(q => 
+                q.id === state.selectedQuestion.id ? state.selectedQuestion : q
+            );
+
+            await saveData();
+            state.editingNote = false;
+            render();
+        }
+
+        async function addSolution(e) {
+            const file = e.target.files[0];
+            if (!file || !state.selectedQuestion) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                state.selectedQuestion.solution = event.target.result;
+                const path = getPath();
+                
+                state.questions[path] = state.questions[path].map(q => 
+                    q.id === state.selectedQuestion.id ? state.selectedQuestion : q
+                );
+
+                await saveData();
+                render();
+            };
+            
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        async function deleteQuestion() {
+            if (!confirm('Bu soruyu silmek istediğine emin misin?')) return;
+            
+            const path = getPath();
+            state.questions[path] = state.questions[path].filter(q => 
+                q.id !== state.selectedQuestion.id
+            );
+            
+            await saveData();
+            state.showQuestionModal = false;
+            state.selectedQuestion = null;
+            render();
+        }
+
+        function showSync() {
+            if (!state.syncCode) {
+                state.syncCode = generateCode();
+            }
+            state.showSyncModal = true;
+            render();
+        }
+
+        function shareCode() {
+            localStorage.setItem('SYNC_' + state.syncCode, JSON.stringify(state.questions));
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'YKS Soru Bankası Kod',
+                    text: 'Benim kodum: ' + state.syncCode
+                });
+            } else {
+                navigator.clipboard.writeText(state.syncCode).then(() => {
+                    alert('Kod kopyalandı: ' + state.syncCode);
+                });
+            }
+        }
+
+        async function connectWithCode() {
+            const input = document.getElementById('syncInput');
+            const code = input?.value?.toUpperCase().trim();
+            
+            if (!code || code.length !== 6) {
+                alert('6 haneli geçerli bir kod gir!');
+                return;
+            }
+
+            const sharedData = localStorage.getItem('SYNC_' + code);
+            
+            if (sharedData) {
+                if (confirm('Cihaz eşleşecek! Mevcut veriler silinecek. Emin misin?')) {
+                    try {
+                        state.questions = JSON.parse(sharedData);
+                        await saveData();
+                        state.showSyncModal = false;
+                        render();
+                        alert('✅ Eşleşme başarılı!');
+                    } catch(e) {
+                        alert('Hata oluştu!');
+                    }
+                }
+            } else {
+                alert('❌ Kod bulunamadı! Diğer cihazda önce "Kodu Paylaş" butonuna bas.');
+            }
+        }
+
+        function render() {
+            const current = getCurrentFolder();
+            const isLeaf = !current || !Object.keys(current).some(k => current[k]?.children);
+            const questionList = state.questions[getPath()] || [];
+
+            let html = `
+                <div class="header">
+                    <h1>✨ YKS Soru Bankası PRO</h1>
+                    <p style="color: #718096;">Sorularını organize et! 🎯</p>
+                    <div class="sync-area">
+                        <div>
+                            <div style="font-size: 0.9rem; color: #718096; margin-bottom: 0.5rem;">🔗 Cihaz Eşleme Kodu:</div>
+                            <div class="code-display">${state.syncCode || '------'}</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="showSync()">🔗 Eşle</button>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <div class="nav">
+                        ${state.currentPath.length > 0 ? 
+                            '<button class="back-btn" onclick="goBack()">◀️</button>' : 
+                            '<div style="width: 40px;"></div>'
+                        }
+                        <div class="path">📂 ${getPath()}</div>
+                        ${isLeaf ? `
+                            <div class="add-btns">
+                                <label class="add-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);" title="Kamera">
+                                    <input type="file" accept="image/*" capture="environment" onchange="addQuestion(event)" class="hidden">
+                                    📸
+                                </label>
+                                <label class="add-btn" style="background: linear-gradient(135deg, #f093fb, #f5576c);" title="Galeri">
+                                    <input type="file" accept="image/*" onchange="addQuestion(event)" class="hidden">
+                                    🖼️
+                                </label>
+                            </div>
+                        ` : '<div style="width: 110px;"></div>'}
+                    </div>
+
+                    <div class="grid">
+            `;
+
+            if (!isLeaf) {
+                for (let name in current) {
+                    const folder = current[name];
+                    const colors = folder.color || ['#a0aec0', '#718096'];
+                    
+                    html += `
+                        <div class="folder-card" 
+                             style="--from: ${colors[0]}; --to: ${colors[1]}" 
+                             onclick="openFolder('${name}')">
+                            <div class="folder-icon">${folder.icon}</div>
+                            <div class="folder-name">${name}</div>
+                        </div>
+                    `;
+                }
+            } else if (questionList.length === 0) {
+                html += `
+                    <div class="empty">
+                        <div class="empty-icon">📸</div>
+                        <h3>Henüz soru yok</h3>
+                        <p>Kamerayı veya galeriyi aç ve soru ekle!</p>
+                    </div>
+                `;
+            } else {
+                questionList.forEach((q, i) => {
+                    html += `
+                        <div class="question-card" onclick="openQuestion(${q.id})">
+                            ${q.solution || q.note ? `
+                                <div class="badges">
+                                    ${q.solution ? '✅' : ''}
+                                    ${q.note ? '📝' : ''}
+                                </div>
+                            ` : ''}
+                            <img src="${q.image}" class="question-img" alt="Soru ${i + 1}">
+                            <div style="font-weight: 700; color: #2d3748;">Soru ${i + 1}</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem; margin-top: 0.5rem;">${q.date}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '</div></div>';
+
+            // Sync Modal
+            if (state.showSyncModal) {
+                html += `
+                    <div class="modal" onclick="if(event.target===this){state.showSyncModal=false;render();}">
+                        <div class="modal-content" onclick="event.stopPropagation()">
+                            <div class="modal-header">
+                                <h2>🔗 Cihaz Eşle</h2>
+                                <button class="close-btn" onclick="state.showSyncModal=false;render();">✖</button>
+                            </div>
+                            <div class="modal-body">
+                                <h3>📱 Senin Kodun:</h3>
+                                <div style="text-align: center; font-size: 3rem; font-weight: 900; color: #667eea; margin: 1.5rem 0; letter-spacing: 0.5rem;">
+                                    ${state.syncCode}
+                                </div>
+                                <button class="btn btn-success" style="width: 100%; margin-bottom: 1rem;" onclick="shareCode()">
+                                    📤 Kodu Paylaş
+                                </button>
+                                <p style="color: #718096; font-size: 0.9rem; text-align: center;">
+                                    Bu kodu diğer cihazda gir veya paylaş
+                                </p>
+                                
+                                <div class="divider"></div>
+                                
+                                <h3>🔗 Başka Cihazdan Bağlan:</h3>
+                                <p style="color: #718096; font-size: 0.9rem; margin-bottom: 1rem;">
+                                    Diğer cihazın 6 haneli kodunu gir:
+                                </p>
+                                <input type="text" 
+                                       id="syncInput" 
+                                       class="input-code" 
+                                       placeholder="ABC123" 
+                                       maxlength="6"
+                                       autocomplete="off">
+                                <button class="btn btn-primary" style="width: 100%;" onclick="connectWithCode()">
+                                    ✅ Bağlan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Question Modal
+            if (state.showQuestionModal && state.selectedQuestion) {
+                html += `
+                    <div class="modal" onclick="if(event.target===this){state.showQuestionModal=false;render();}">
+                        <div class="modal-content" onclick="event.stopPropagation()">
+                            <div class="modal-header">
+                                <h2>📚 Soru Detayı</h2>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="close-btn" onclick="deleteQuestion()" title="Sil">🗑️</button>
+                                    <button class="close-btn" onclick="state.showQuestionModal=false;render();" title="Kapat">✖</button>
+                                </div>
+                            </div>
+                            <div class="modal-body">
+                                <img src="${state.selectedQuestion.image}" 
+                                     style="width: 100%; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" 
+                                     alt="Soru">
+                                
+                                <h3>📝 Notlarım</h3>
+                                ${state.editingNote ? `
+                                    <textarea id="noteArea" rows="6" placeholder="Notlarını buraya yaz...">${state.selectedQuestion.note}</textarea>
+                                    <button class="btn btn-success" style="width: 100%; margin-top: 1rem;" onclick="saveNote()">
+                                        💾 Notu Kaydet
+                                    </button>
+                                ` : `
+                                    <div class="note-box">
+                                        ${state.selectedQuestion.note || '<em style="color: #a0aec0;">Henüz not eklenmemiş...</em>'}
+                                    </div>
+                                    <button class="btn btn-primary" onclick="state.editingNote=true;render();">
+                                        ✏️ Not Düzenle
+                                    </button>
+                                `}
+                                
+                                <div class="divider"></div>
+                                
+                                <h3>✅ Çözüm Fotoğrafı</h3>
+                                ${state.selectedQuestion.solution ? `
+                                    <img src="${state.selectedQuestion.solution}" 
+                                         style="width: 100%; border-radius: 12px; margin-top: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" 
+                                         alt="Çözüm">
+                                    <button class="btn btn-danger" style="width: 100%; margin-top: 1rem;" 
+                                            onclick="state.selectedQuestion.solution=null;saveData();render();">
+                                        🗑️ Çözümü Sil
+                                    </button>
+                                ` : `
+                                    <label class="btn btn-success" style="width: 100%; margin-top: 1rem; display: block; text-align: center;">
+                                        📸 Çözüm Ekle
+                                        <input type="file" accept="image/*" onchange="addSolution(event)" class="hidden">
+                                    </label>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('app').innerHTML = html;
+        }
+
+        // Başlatma
+        (async () => {
+            console.log('🚀 Uygulama başlatılıyor...');
+            
+            try {
+                await initDB();
+                console.log('✅ IndexedDB hazır');
+                
+                await loadData();
+                console.log('✅ Veriler yüklendi:', Object.keys(state.questions).length, 'klasör');
+                
+                state.syncCode = generateCode();
+                console.log('✅ Sync kodu:', state.syncCode);
+                
+                render();
+                console.log('✅ Uygulama hazır!');
+            } catch(e) {
+                console.error('❌ Hata:', e);
+                alert('Uygulama başlatılamadı! Sayfayı yenile.');
+            }
+        })();
+    </script>
+</body>
+</html>
