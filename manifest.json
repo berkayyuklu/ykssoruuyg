@@ -1,15 +1,17 @@
 {
-  "name": "YKS Soru Bankası",
-  "short_name": "YKS Sorular",
-  "start_url": ".",
+  "name": "YKS Soru Bankası PRO",
+  "short_name": "YKS PRO",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#6366f1",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "https://em-content.zobj.net/source/apple/391/books_1f4da.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
