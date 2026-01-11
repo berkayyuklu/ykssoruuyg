@@ -1,5 +1,9 @@
-const CACHE_NAME = 'yks-v1';
-const urlsToCache = ['./', './index.html'];
+const CACHE_NAME = 'yks-pro-v1';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json'
+];
 
 self.addEventListener('install', event => {
   event.waitUntil(
